@@ -1,27 +1,60 @@
-# Example corpus
+# Your corpus (alternative location)
 
-Drop your own published work here so `marginalia-extract-style` can learn your voice. Files in this directory are gitignored — they stay on your machine.
+This folder can hold your own published writing, the work marginalia learns your
+voice from.
+
+**Most people should not use this folder.** The recommended location is
+`~/.marginalia/examples/`, outside the project, so your writing can never be
+caught up in anything you later share or publish. The main README walks through
+setting that up.
+
+This folder exists for two cases: you are trying marginalia out and would rather
+not create anything in your home directory yet, or you deliberately keep the tool
+and your corpus together. Either is fine. marginalia looks in
+`~/.marginalia/examples/` first and falls back to here.
+
+Anything you put in `papers/`, `grants/` or `other/` is ignored by git and will
+not be uploaded if you push changes. That protection lives in `.gitignore`. If
+you move things around, check it still holds.
 
 ## Layout
 
-- `papers/` — peer-reviewed journal articles, book chapters
-- `grants/` — funded grant proposals (full text, not summaries)
-- `other/` — anything else you write in (essays, op-eds, letters)
+- `papers/` — journal articles, book chapters
+- `grants/` — funded proposals, full text rather than summaries
+- `other/` — anything else you write: essays, reports, talks
 
-## Format
+You can add more folders. Any name you use becomes a genre you can pass to
+`--genre`.
+
+## What to put here
+
+Published or funded work only, or writing you did entirely yourself and are happy
+with. Not drafts, and nothing written with AI help.
+
+marginalia learns to imitate whatever it finds here, so an AI-assisted draft
+teaches it the drift as though it were your voice, and it will then defend that
+drift in every future review.
+
+Three or more per folder gives a solid profile. One or two works but is marked
+low-confidence. An empty folder is fine.
+
+## File formats
 
 Supported: `.md`, `.markdown`, `.txt`, `.pdf`, `.docx`, `.doc`, `.rtf`, `.odt`.
 
-Non-Markdown formats are auto-converted to a sibling `.md` the first time `marginalia-extract-style` runs. The conversion is cached (re-runs skip it if the source hasn't changed), and you can hand-edit the resulting `.md` to refine the corpus — your edits survive subsequent runs as long as the `.md` is newer than the source.
+Anything that is not already Markdown is converted automatically the first time
+you run `extract-style`, producing a `.md` alongside the original. The conversion
+is cached, so later runs skip it, and you can hand-edit the `.md` to clean it up.
+Your edits survive as long as the `.md` stays newer than the source.
 
-Requirements:
-- `pandoc` on `PATH` — for `.docx`, `.doc`, `.rtf`, `.odt`. Install: `brew install pandoc` (macOS) or via your package manager.
-- `pdftotext` on `PATH` — for `.pdf`. Install: `brew install poppler` (macOS) or `apt install poppler-utils` (Debian/Ubuntu).
+Conversion needs two tools, and only for the formats you actually use:
 
-See `content/input-ingestion.md` for the full conversion procedure and caveats (figures, multi-column PDFs, scanned PDFs requiring OCR, track-changes, etc.).
+- **`pandoc`** for `.docx`, `.doc`, `.rtf`, `.odt`. Install with `brew install pandoc`, or your package manager.
+- **`pdftotext`** for `.pdf`. Install with `brew install poppler`, or `apt install poppler-utils`.
 
-## How many examples do I need?
+Conversion is imperfect. Figures, complex tables and multi-column PDF layouts
+come through badly, and a scanned PDF produces nothing at all until you run OCR
+on it (`ocrmypdf` works well). The profile is only as good as the text it sees,
+so it is worth opening one converted file to check it is readable.
 
-- 3+ per genre gives a confident style profile.
-- 1–2 works but the resulting style file is marked low-confidence; the review skill leans more on the cross-genre `base.md`.
-- 0 examples for a genre is fine — the review skill falls back to `base.md` alone.
+See `content/input-ingestion.md` for the full procedure and caveats.
