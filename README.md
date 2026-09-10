@@ -6,6 +6,10 @@ It also checks that your citations exist and actually say what you claim they sa
 
 Built by an academic, for academic writing: papers, grant proposals, chapters, reports.
 
+Runs on Claude Code today. The procedures themselves are plain English and not
+tied to any model, so it can be adapted to OpenAI, Gemini or a local model. See
+[docs/PORTING.md](docs/PORTING.md).
+
 ---
 
 ## The problem it solves
@@ -454,6 +458,21 @@ Contributor guidance is in `CLAUDE.md`.
 </details>
 
 ---
+
+## Using a different AI model
+
+marginalia runs on Claude Code, but it is not a Claude program. Almost everything
+it knows lives in ordinary Markdown files that describe *how* to review writing.
+Any model capable of following them can do the job.
+
+Of the twelve procedure files, eleven need no changes at all. One names two
+Claude Code tools, and only for citation checking.
+
+**[docs/PORTING.md](docs/PORTING.md)** covers what a replacement runtime has to
+provide, how much context each operation needs (measured, not guessed), three
+routes to get there, and an honest account of what a local model can and cannot
+do. Short version: reviewing and writing port well; citation checking needs
+internet access, which is a network problem rather than a model one.
 
 ## Where this came from
 
