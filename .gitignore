@@ -1,0 +1,43 @@
+# Style profiles are personal. They contain verbatim passages of their author's
+# writing, including unpublished work, which is why the recommended location is
+# ~/.marginalia/styles/ rather than the checkout (see content/paths.md).
+#
+# If you keep them here instead — the supported fallback — they stay untracked.
+# Only the schema template is tracked.
+content/styles/*
+!content/styles/.gitkeep
+!content/styles/template.md
+
+# Measured baselines are derived from one person's corpus and are meaningless,
+# and actively misleading, against anyone else's. Never commit one.
+content/styles/baselines.json
+
+# Your corpus.
+examples/papers/*
+examples/grants/*
+examples/other/*
+!examples/papers/.gitkeep
+!examples/grants/.gitkeep
+!examples/other/.gitkeep
+!examples/README.md
+
+# Review report directories: intermediate artifacts, they accumulate fast.
+*.marginalia/
+
+# macOS / editor / OS junk
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Claude Code per-developer state
+.claude/settings.local.json
+
+# Python / Node artifacts
+__pycache__/
+*.pyc
+node_modules/
+.venv/
+dist/
+build/

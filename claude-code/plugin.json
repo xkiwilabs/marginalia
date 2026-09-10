@@ -1,0 +1,19 @@
+{
+  "name": "marginalia",
+  "version": "0.4.0",
+  "description": "A writing toolkit for academic prose. Drafts and revises in the author's own voice, reviews for AI-drift, and verifies citations across four tiers.",
+  "author": "Michael J. Richardson <michael.j.richardson@mq.edu.au>",
+  "license": "MIT",
+  "skills": [
+    "skills/marginalia-write",
+    "skills/marginalia-review",
+    "skills/marginalia-extract-style",
+    "skills/marginalia-verify-cites",
+    "skills/marginalia-calibrate",
+    "skills/marginalia-refine",
+    "skills/marginalia-adapt"
+  ],
+  "commands": [
+    "commands/marginalia.md"
+  ]
+}
