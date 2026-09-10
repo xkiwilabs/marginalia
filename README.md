@@ -6,9 +6,11 @@ It also checks that your citations exist and actually say what you claim they sa
 
 Built by an academic, for academic writing: papers, grant proposals, chapters, reports.
 
-Runs on Claude Code today. The procedures themselves are plain English and not
-tied to any model, so it can be adapted to OpenAI, Gemini or a local model. See
-[docs/PORTING.md](docs/PORTING.md).
+Runs on **Claude Code** today. It is not tied to Claude, though: almost
+everything it knows lives in plain-English files that any capable model can
+follow, so it can be adapted to OpenAI, Gemini or a local model. See
+[Using a different AI model](#using-a-different-ai-model) below, or
+[docs/PORTING.md](docs/PORTING.md) for the detail.
 
 ---
 
@@ -58,6 +60,14 @@ echo hello
 
 marginalia runs inside **Claude Code**, Anthropic's assistant for the terminal.
 It needs a Claude account on a paid plan.
+
+> **Would rather not use Claude?** You do not have to. marginalia's actual
+> content is a set of written procedures, not code tied to one provider, and ten
+> of its twelve procedure files need no changes at all to run elsewhere. Adapting
+> it to OpenAI, Gemini, another agentic CLI, or a local model is a real option
+> and is documented in [Using a different AI model](#using-a-different-ai-model)
+> and [docs/PORTING.md](docs/PORTING.md). The rest of this guide assumes Claude
+> Code, because that is what works today with no extra effort.
 
 Install instructions: <https://docs.claude.com/en/docs/claude-code/overview>
 
