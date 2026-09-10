@@ -69,6 +69,22 @@ STYLES_DIR = resolve_styles_dir()
 CORPUS_DIR = resolve_corpus_dir()
 BASELINE_PATH = STYLES_DIR / "baselines.json"
 
+
+def shadowed_profile() -> "Path | None":
+    """A lower-priority root holding a profile the resolved root does not.
+
+    Resolution order keys on a directory *existing*, so creating ~/.marginalia
+    for any reason silently promotes it above a repo that holds the real
+    profiles. The run would then proceed with no voice profile and, without
+    this check, no indication of why. Returns the shadowed root, or None.
+    """
+    if (STYLES_DIR / "base.md").exists():
+        return None
+    for cand in (Path.home() / ".marginalia" / "styles", REPO / "content" / "styles"):
+        if cand != STYLES_DIR and (cand / "base.md").exists():
+            return cand
+    return None
+
 # ---------------------------------------------------------------- extraction
 
 ITEM = "\u27e6ITEM\u27e7"   # sentinel marking a list item, resolved in extract_prose
@@ -599,6 +615,13 @@ def main():
     ap.add_argument("--emit-baseline", action="store_true")
     a = ap.parse_args()
 
+    shadow = shadowed_profile()
+    if shadow:
+        print(f"WARNING: using styles from {STYLES_DIR}, which has no base.md, "
+              f"while a profile exists at {shadow}. Nothing will be compared "
+              f"against your voice. Move the profile, or set MARGINALIA_HOME.",
+              file=sys.stderr)
+
     if a.emit_baseline:
         pats = [tuple(c.split("=", 1)) for c in (a.corpus or [])] or [
             ("papers", str(CORPUS_DIR / "papers/*.md")),
@@ -630,8 +653,13 @@ def main():
     summary = {k: v for k, v in m.items() if not k.startswith("_")}
 
     if a.json:
-        print(json.dumps({"summary": summary, "baseline": baseline,
-                          "candidates": cands}, indent=2))
+        # styles_dir and shadowed_profile let the review protocol name the root
+        # it actually read, and warn when a profile is being bypassed.
+        out = {"summary": summary, "baseline": baseline, "candidates": cands,
+               "styles_dir": str(STYLES_DIR)}
+        if shadow:
+            out["shadowed_profile"] = str(shadow)
+        print(json.dumps(out, indent=2))
         return 0
 
     print(f"# {p.name}  ({summary['words']} words, {summary['sentences']} sentences, "

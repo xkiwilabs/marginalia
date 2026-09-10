@@ -275,6 +275,12 @@ disagree on a *count*, E is right. Where they disagree on whether a count
 python3 tools/prose_metrics.py <target> --genre <genre> --json
 ```
 
+Its `--json` output reports `styles_dir`, the profile root actually read. **Put
+that in the report header**, next to which style files loaded. If it also reports
+`shadowed_profile`, a profile exists at a lower-priority root and is being
+bypassed: surface that as a HIGH issue rather than a footnote, because every
+voice finding in the run is missing as a result. See `content/paths.md`.
+
 It handles `.md`, `.mdx`, `.tex`, and `.txt` directly (see
 `content/input-ingestion.md`). If the script is missing or errors, note
 `Dimension E: skipped (prose_metrics unavailable)` in the report header and

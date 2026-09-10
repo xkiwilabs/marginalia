@@ -1,72 +1,344 @@
 # marginalia
 
-A writing toolkit for academic prose. It drafts and revises in **your** voice,
-reviews writing for AI-drift, and verifies citations across four tiers.
+**A writing assistant that learns how *you* write, then tells you where a draft has stopped sounding like you.**
 
-The premise: the useful comparison is not against a generic style guide, it is
-against your own published writing. marginalia learns your voice from work you
-have already published, then flags where a draft has drifted away from it.
+It also checks that your citations exist and actually say what you claim they say.
 
-It is a critic, not a ghostwriter. Reports are annotated. You apply the edits.
+Built by an academic, for academic writing: papers, grant proposals, chapters, reports.
 
-## What it does
+---
 
-- **Reviews writing** for AI-default lexicon (delve, crucial, robust), structural tics (tricolons, three-example paragraphs), and drift from your own published voice.
-- **Verifies citations** across four tiers: existence and accuracy, venue reputability, claim–source match, better-source suggestions.
-- **Drafts in your voice**, using verbatim passages from your corpus as few-shot targets rather than an abstract rulebook.
-- **Measures rather than guesses** where a count is what's needed. A deterministic tool counts sentence lengths, punctuation rates and gloss density against baselines from your own corpus; the prose sweep decides which counts matter.
-- **Stays out of your way.** No silent writes, ever. Every edit goes through a diff you confirm.
+## The problem it solves
 
-## Requirements
+If you use AI to help with writing, your prose drifts. Not dramatically, and not
+in ways you notice while you are inside the document. It gets smoother, flatter
+and more generic. Sentences shorten. Certain words creep in: *delve*, *crucial*,
+*robust*, *underscore*. Your actual voice, the thing that made the writing
+recognisably yours, quietly leaks out.
 
-- **Claude Code.** The current runtime is skills plus a slash command.
-- **Python 3** on `PATH`. Backs the measurement layer. Standard library only, nothing to install. Without it reviews still run, minus the measured metrics.
-- **`pandoc`** — only if your corpus includes `.docx`, `.doc`, `.rtf` or `.odt`. `brew install pandoc`, or your package manager.
-- **`pdftotext`** (poppler) — only if your corpus includes `.pdf`. `brew install poppler`, or `apt install poppler-utils`.
+The other problem is citations. AI-assisted drafts contain references that do not
+exist, references with the wrong year, and references that are real but do not
+support the claim attached to them.
+
+marginalia checks for both. It is a **critic, not a ghostwriter**: it tells you
+what it found and you decide what to do. It never edits your files without
+showing you exactly what it wants to change and waiting for you to say yes.
+
+The unusual part is what it compares against. Most writing tools measure you
+against generic "good writing" rules. marginalia measures you against **your own
+published work**. If you write long, clause-dense sentences, it will not tell you
+to shorten them. It will tell you when a draft has stopped doing what you
+normally do.
+
+---
+
+## Before you start
+
+You need three things. If you already have them, skip to [Install](#install).
+
+### 1. A terminal
+
+On a Mac, press `Cmd + Space`, type `Terminal`, press Enter. A window opens where
+you type commands. That is all a terminal is.
+
+On Windows, use Windows Terminal or PowerShell.
+
+Throughout this guide, anything in a box like this is something you type or paste
+into that window, then press Enter:
+
+```bash
+echo hello
+```
+
+### 2. Claude Code
+
+marginalia runs inside **Claude Code**, Anthropic's assistant for the terminal.
+It needs a Claude account on a paid plan.
+
+Install instructions: <https://docs.claude.com/en/docs/claude-code/overview>
+
+To check it worked:
+
+```bash
+claude --version
+```
+
+A version number means you are set. "Command not found" means it is not installed
+yet.
+
+### 3. Python 3
+
+Almost certainly already on your machine. Check:
+
+```bash
+python3 --version
+```
+
+If you see `Python 3.something`, you are done. Otherwise install it from
+<https://www.python.org/downloads/>.
+
+### Optional, depending on your files
+
+Only needed if your published work is in PDF or Word format, which it probably
+is.
+
+On a Mac, first install Homebrew (a tool for installing other tools) from
+<https://brew.sh>, then:
+
+```bash
+brew install pandoc poppler
+```
+
+`pandoc` reads Word documents. `poppler` reads PDFs. Without them marginalia
+still runs, but only sees plain text and Markdown files.
+
+---
 
 ## Install
 
+**Step 1.** Open your terminal and pick where to put it. Your home folder is
+fine:
+
 ```bash
-git clone https://github.com/<owner>/marginalia.git
+cd ~
+```
+
+**Step 2.** Download marginalia:
+
+```bash
+git clone https://github.com/xkiwilabs/marginalia.git
 cd marginalia
+```
+
+*(`git clone` downloads a copy of this project. `cd` moves you into the folder it
+just created.)*
+
+**Step 3.** Install it into Claude Code:
+
+```bash
 ./install.sh
 ```
 
-That symlinks the seven skills and the `/marginalia` command into `~/.claude/`.
-Symlinks rather than copies, so edits to the protocols take effect immediately
-with no reinstall. `./install.sh --uninstall` removes them, and `CLAUDE_HOME=/path`
-targets a non-default Claude config directory.
+You should see a list of green ticks ending in "Done."
 
-## Getting started
+**Step 4.** Restart Claude Code, or start a new session.
 
-A fresh install has no profile, so it cannot yet compare anything to your voice.
-Reviews still catch AI-drift and structural problems; the voice dimension is
-skipped and says so. Building the profile takes four steps and one pass over
-your corpus.
+To check it worked, start Claude Code and type `/marginalia`. It should be
+recognised as a command.
 
-**1. Choose where your profile lives.** Recommended:
+> **What just happened?** The installer created shortcuts from Claude Code's
+> settings folder to this project. Claude Code now knows about seven new
+> abilities, called *skills*, plus a `/marginalia` command. They are shortcuts
+> rather than copies, so updating this project updates what Claude Code uses,
+> automatically.
+
+---
+
+## Teaching it your voice
+
+marginalia starts out knowing nothing about you. Until you finish this section it
+can still catch generic AI-sounding writing, but it cannot tell you when
+something does not sound like *you*, because it has never seen your writing.
+
+Budget about ten minutes, most of it the computer working.
+
+### Step 1: Make a folder for your writing
 
 ```bash
-mkdir -p ~/.marginalia/examples/{papers,grants,other}
+mkdir -p ~/.marginalia/examples/papers
+mkdir -p ~/.marginalia/examples/grants
+mkdir -p ~/.marginalia/examples/other
 ```
 
-marginalia looks in `$MARGINALIA_HOME`, then `~/.marginalia/`, then the repo
-itself. Keeping your corpus and profile outside the checkout means you can pull
-updates without touching your voice. See `content/paths.md`.
+This creates a hidden folder in your home directory. **That is deliberate: it
+sits outside the marginalia project folder**, so your writing is never caught up
+in anything you later share or publish.
 
-**2. Add your own published work.**
+### Step 2: Add your published work
+
+Copy in things you have actually published or been funded for. PDFs and Word
+files are fine.
 
 ```bash
-cp ~/papers/*.pdf  ~/.marginalia/examples/papers/
-cp ~/grants/*.docx ~/.marginalia/examples/grants/
+cp ~/Documents/my-papers/*.pdf ~/.marginalia/examples/papers/
 ```
 
-Published or funded work only. The profile is a description of how you actually
-write, so drafts and AI-assisted pieces poison it. Three or more per genre gives
-a confident profile; one or two works but is marked low-confidence. Non-Markdown
-files are converted automatically on first run.
+Or drag the files in using Finder. To open that folder in Finder:
 
-**3. Extract the profile and measure the baselines.**
+```bash
+open ~/.marginalia/examples
+```
+
+**This step matters more than anything else in this guide.** marginalia will
+learn to imitate whatever you put here.
+
+- **Do add:** published papers, funded applications, book chapters, anything peer-reviewed or written entirely by you.
+- **Do not add:** drafts, anything written with AI help, anything you are not happy with.
+
+Feed it AI-assisted drafts and it will faithfully learn the drift as though it
+were your voice, then defend that drift in every future review.
+
+**How many?** Three or more per category gives a solid profile. One or two works
+but gets marked low-confidence. An empty category is fine.
+
+### Step 3: Build the profile
+
+Start Claude Code inside the marginalia folder:
+
+```bash
+cd ~/marginalia
+claude
+```
+
+Then type:
+
+```
+/marginalia extract-style --genre=all
+```
+
+This reads every document and works out how you write: typical sentence length,
+which words you reach for, how you bring in citations, how you build a paragraph,
+how you handle an objection. It takes a few minutes and reports what it found.
+
+Then, back in the terminal:
+
+```bash
+python3 tools/prose_metrics.py --emit-baseline
+```
+
+This measures the numbers, such as your average sentence length and punctuation
+rates. They become the yardstick a review compares a draft against.
+
+### Step 4: Check that it worked
+
+```
+/marginalia calibrate --genre=papers
+```
+
+This is a test, and worth the five minutes. It takes a passage of your own
+writing, hides it, rebuilds it from the profile alone, then compares its attempt
+against what you actually wrote. If the profile is wrong, this is where you find
+out, and it proposes fixes.
+
+**Do not skip this.** A profile nobody has tested is a guess.
+
+---
+
+## Using it
+
+Start Claude Code in the folder where your document lives, then:
+
+### Review a draft
+
+```
+/marginalia review my-paper.md
+```
+
+You get a report of what it found: AI-sounding words, structural tics, places the
+draft has drifted from your usual style, each with a line number and a suggested
+fix. Your file is not touched.
+
+Add `--genre=grants` for a grant application, since the register differs.
+
+### Check the citations
+
+```
+/marginalia cite my-paper.md
+```
+
+Checks every citation at four levels: does it exist, is the venue reputable, does
+the source actually support your claim, and is there a better source. This one
+takes a while, because it searches academic databases for each reference.
+
+### Apply the suggested edits
+
+```
+/marginalia apply my-paper.md.marginalia/2026-05-15-1142-review.md
+```
+
+Walks through the report's suggestions. **It shows a before-and-after for every
+change and waits for your approval.** Mechanical fixes are grouped; anything
+needing judgement comes to you one at a time.
+
+### Write something new in your voice
+
+```
+/marginalia write "draft an abstract about coordination dynamics"
+```
+
+You can also just ask Claude for writing help normally, in any session. It
+notices and applies your voice profile without being asked.
+
+### Everything else
+
+| Command | What it does |
+|---|---|
+| `/marginalia review <file>` | Check a draft for drift |
+| `/marginalia cite <file>` | Verify citations |
+| `/marginalia full <file>` | Both at once |
+| `/marginalia apply <report>` | Apply edits, with your approval |
+| `/marginalia write "<task>"` | Draft in your voice |
+| `/marginalia extract-style` | Build or rebuild your profile |
+| `/marginalia calibrate` | Test that the profile sounds like you |
+| `/marginalia refine` | Improve your voice, not just enforce it |
+| `/marginalia adapt --to=blog` | Guess a profile for a format you have not written in yet |
+| `/marginalia clean` | Delete old reports |
+
+### File types
+
+Works directly with `.md`, `.txt`, `.tex` and `.mdx`. PDFs and Word files are
+converted automatically, though conversion is imperfect for figures, complex
+tables and multi-column layouts.
+
+---
+
+## Where your files live, and why
+
+Two locations, kept deliberately apart.
+
+| What | Where | Why |
+|---|---|---|
+| The tool | `~/marginalia/` | Shared. Anyone can have a copy. |
+| **Your writing and profile** | `~/.marginalia/` | **Private. Yours alone.** |
+
+Your profile is not a list of abstract rules. It contains **actual sentences from
+your papers**, because that is what lets it reproduce your voice rather than
+merely describe it. It may quote unpublished work.
+
+That is why it lives outside the project folder, and why this repository refuses
+to track profiles even if you put one there. If you fork this project or push
+changes anywhere, check what you are about to publish.
+
+The same goes for `baselines.json`, the file of measured numbers. It describes
+one person's writing. Using someone else's would silently compare your prose to
+their voice, with nothing visible to tell you it was happening.
+
+---
+
+## When something goes wrong
+
+**`/marginalia` is not recognised.** Restart Claude Code. If it still fails, run
+`./install.sh` again from the marginalia folder and read the output for errors.
+
+**"No base style available."** The profile has not been built yet. See
+[Teaching it your voice](#teaching-it-your-voice).
+
+**"command not found: python3"** Python is not installed. See
+[Before you start](#before-you-start).
+
+**A PDF produced nothing.** It is probably a scan rather than text. Run it
+through OCR first (`ocrmypdf` works well), or find a text version.
+
+**It flags things that are genuinely your style.** The profile is missing
+something. Add a note to the `## Manual overrides` section at the bottom of the
+relevant file in `~/.marginalia/styles/`. Anything written there outranks
+everything the tool worked out by itself, and survives every rebuild.
+
+**It flags nothing on a document you know is bad.** Check the report header for
+which profile files were loaded. If it says none, the profile is not being found.
+
+**Everything looks wrong after I added new work.** Rebuild both halves, not just
+one:
 
 ```
 /marginalia extract-style --genre=all
@@ -75,234 +347,125 @@ files are converted automatically on first run.
 python3 tools/prose_metrics.py --emit-baseline
 ```
 
-The first writes `base.md` plus one overlay per genre. The second writes
-`baselines.json`, the measured rates that turn a raw count into a finding. Run
-both together whenever you add to the corpus.
+---
 
-**4. Check that it actually sounds like you.**
+## Glossary
 
-```
-/marginalia calibrate --genre=papers
-```
+Terms this guide could not entirely avoid.
 
-This holds out a passage of your own writing, reconstructs it blind from the
-profile, and scores the reconstruction against the real thing. If it scores
-badly the profile is wrong, and calibrate proposes fixes. Do not skip this: a
-profile nobody has tested is a guess.
+- **Terminal** — the window where you type commands.
+- **Claude Code** — Anthropic's assistant that runs in your terminal. marginalia is an add-on for it.
+- **Skill** — an ability you add to Claude Code. marginalia installs seven.
+- **Repository (repo)** — a project folder, usually shared through GitHub.
+- **Clone** — download your own copy of a repository.
+- **Corpus** — your collection of published writing, the thing the profile is learned from.
+- **Profile** — the description of how you write, kept in `~/.marginalia/styles/`.
+- **Genre** — a category of writing with its own register: `papers`, `grants`, `business`, `devdocs`, or any label you invent.
+- **Baseline** — the measured numbers from your corpus, used to judge a draft.
+- **AI-drift** — the flattening that creeps in when AI helps with writing.
+- **Register** — how formal a kind of writing is. A grant and a blog post differ in register.
 
-Then:
+---
 
-```
-/marginalia review draft.md --genre=papers
-```
+<details>
+<summary><strong>Reference: how citation checking works</strong></summary>
 
-## Usage
+**Tier 1 — Existence and accuracy.** Cheap, always run. Searches Crossref,
+Semantic Scholar and Google Scholar; verifies author, year, title and venue;
+returns a DOI. Catches the most common AI failure: invented citations, and real
+ones with the wrong year or first author.
 
-```
-/marginalia write "draft an executive summary for X"
-/marginalia review proposal.md --genre=grants
-/marginalia cite proposal.md
-/marginalia extract-style --genre=all
-/marginalia calibrate --genre=papers
-/marginalia refine --genre=papers --categories=tics,underused
-/marginalia adapt --to=blog
-/marginalia full proposal.md
-/marginalia apply proposal.md.marginalia/2026-05-15-1142-review.md
-/marginalia clean --older-than=30d
-```
+**Tier 2 — Source reputability.** Cheap, default on. Checks whether the venue is
+peer-reviewed and indexed, flags likely predatory journals, and flags preprints
+cited without a preprint qualifier. A flag means the venue is worth a look, not
+that the citation is wrong.
 
-`marginalia-write` also engages **implicitly**: ask Claude for help drafting or
-revising prose in any session and it pulls in your voice profile, no `/marginalia`
-prefix needed.
+**Tier 3 — Claim–source match.** Expensive, default on. Reads the source's
+abstract and, where open-access, key passages of the full text, then compares
+what your sentence claims against what the source actually argues. Flags
+overgeneralised, directionally wrong and domain-mismatched claims. Deliberately
+cautious: it would rather raise a defensible question than stay quiet about a
+real mismatch, so expect to dismiss some.
 
-See `claude-code/commands/marginalia.md` for the full command surface.
+**Tier 4 — Better sources.** Advisory only. Looks for the original empirical
+source when you have cited a review, and for newer meta-analyses or replications.
+Never blocks anything.
 
-## Your profile is private
+</details>
 
-A style profile is not a set of abstract rules. It contains verbatim passages of
-your writing, including unpublished work, because that is what makes it able to
-reproduce your voice rather than describe it.
+<details>
+<summary><strong>Reference: genres</strong></summary>
 
-So: **profiles are gitignored, and the recommended location is outside the repo
-entirely.** `content/styles/` here holds only `template.md`, which documents the
-schema. If you fork this repo, check what you are about to push.
+`papers`, `grants` and `other` are the starting set, but you can invent any
+label. Two ship with rules worth knowing about.
 
-The same goes for `baselines.json`. It is measured from one corpus and is
-meaningless against another. Copying someone else's would silently compare your
-prose to their voice, with nothing on the surface to show it.
+**`devdocs`** — READMEs, code comments, changelogs. Most academic rules do not
+transfer. Short sentences and imperatives are correct here rather than voice
+loss. What carries over is the AI-slop word list and the structural tics, because
+a README goes wrong the same way a grant does.
 
-## The commands
+**`business`** — partner terms, letters of intent, investor memos. The reader is
+a counterparty rather than a student, so the characteristic failure is explaining
+something they already know.
 
-**`review`** sweeps a draft across five dimensions: AI-drift lexicon, structural
-anti-patterns, distance from your profile, citation integration, and measured
-surface metrics. Output is an annotated report plus a JSON sidecar.
+</details>
 
-**`cite`** verifies citations across four tiers, dispatching one sub-agent per
-unique citation, capped at 8 concurrent.
+<details>
+<summary><strong>Reference: how it is built</strong></summary>
 
-**`write`** drafts or revises with your profile as a generation constraint,
-using the corpus exemplars as few-shot targets.
-
-**`extract-style`** builds the profile: per-document feature extraction, then
-cross-document synthesis. Features stable across genres land in `base.md`;
-genre-specific ones land in the overlay.
-
-**`calibrate`** is the self-test above. `--contrast` adds a generic-versus-voiced
-read so you can see what the profile is buying you.
-
-**`refine`** critiques the voice itself rather than a draft, proposing
-corpus-grounded refinements: overused tics to dial back, underused strengths to
-lean into. Every suggestion cites your own corpus. It never measures you against
-an external standard, and accepted suggestions land only in `## Manual overrides`.
-
-**`adapt`** derives a *provisional* overlay for a format you have no corpus for
-yet, a blog or a newsletter or a talk, by transforming your base voice for the
-target register. Marked DERIVED and low-confidence, it decays into a real profile
-via `extract-style` as real pieces accumulate.
-
-**`apply`** stages a report's edits as a diff against the source. **`full`** runs
-review and cite in parallel and merges them. **`clean`** deletes old reports.
-
-### Genres
-
-`papers`, `grants` and `other` are the starting set, but the genre space is open:
-any slug you pass to `--genre` names an overlay. Two ship with rules worth
-reading before you use them.
-
-- **`devdocs`** — READMEs, docstrings, changelogs, PR text. Most academic surface rules do not transfer. Short sentences, imperatives and dense headings are correct here rather than voice loss. What carries over is the AI-slop avoid-list and the structural anti-patterns, because a README goes wrong the same way a grant does.
-- **`business`** — partner terms, letters of intent, investor memos, onboarding packs. The reader is a counterparty rather than a student, so the characteristic failure is teaching them something they already know.
-
-## Architecture
-
-A portable content layer holds all of the procedure and lexicon; a runtime layer
-wraps it. Today the runtime is Claude Code skills and a router command. Nothing
+A portable content layer holds all the procedure and vocabulary; a runtime layer
+wraps it. Today that runtime is Claude Code skills plus a router command. Nothing
 in `content/` has to change to add another.
 
-Alongside it sits a small `tools/` layer, deliberately code rather than protocol.
-Everything else in marginalia is a judgement task, which is what a language model
-executing a prose protocol is good at. Counting is not. `prose_metrics.py` counts
-sentence lengths, punctuation rates, gloss density and contrast-frame surfaces
-against your measured baselines. `business_tells.py` does the same for the
-business register. The split: **the tools count and locate; the protocols judge.**
+Alongside it is a small `tools/` layer, deliberately code rather than written
+instructions. Everything else here is a judgement task, which is what a language
+model following a protocol is good at. Counting is not. So two Python scripts
+count sentence lengths, punctuation rates and vocabulary density against your
+measured baselines. **The tools count and locate; the protocols judge.**
 
 ```text
 marginalia/
-├── content/                    # portable: all procedure and lexicon
-│   ├── paths.md                # where profiles and corpus resolve
-│   ├── ai-drift.md             # lexicon + structural anti-pattern catalogue
-│   ├── write-protocol.md
-│   ├── review-protocol.md
-│   ├── extraction-protocol.md
-│   ├── citation-tiers.md
-│   ├── sub-agent-prompt.md
-│   ├── apply-protocol.md
-│   ├── input-ingestion.md
-│   ├── calibration-protocol.md
-│   ├── refine-protocol.md
-│   ├── adapt-protocol.md
+├── content/          # every protocol, and the AI-drift catalogue
+│   ├── paths.md      # where profiles and corpus are found
 │   └── styles/
-│       └── template.md         # schema; real profiles are gitignored
-│
-├── tools/                      # deterministic measurement
-│   ├── prose_metrics.py
-│   └── business_tells.py
-│
-├── claude-code/                # runtime
-│   ├── plugin.json
-│   ├── skills/                 # 7 thin loaders
-│   └── commands/marginalia.md
-│
-├── examples/                   # your corpus, gitignored
-└── tests/fixtures/             # smoke-test inputs and expected outputs
+│       └── template.md   # the schema; real profiles are never tracked
+├── tools/            # two Python counters
+├── claude-code/      # the runtime: 7 skills + the /marginalia command
+├── examples/         # your corpus, if you keep it here instead
+└── tests/fixtures/   # test documents with known problems
 ```
 
-Skill files stay thin. If procedure logic is creeping into a `SKILL.md`, it
-belongs in `content/` instead.
+Contributor guidance is in `CLAUDE.md`.
 
-## How style learning works
+</details>
 
-1. Put published work in your corpus directory. Supported: `.md`, `.markdown`, `.txt`, `.pdf`, `.docx`, `.doc`, `.rtf`, `.odt`. Non-Markdown is converted to a sibling `.md` on first run; the conversion is cached and you can hand-edit the result to clean it up.
-2. `extract-style` does per-document feature extraction (lexicon, sentence structure, hedging, citation integration, paragraph architecture, argumentative moves) then cross-document synthesis.
-3. Output is declarative rules a reviewer can check, like "median sentence length 24 words; rarely exceed 38", not raw statistics. Plus verbatim exemplars, which is what lets `write` imitate rather than paraphrase.
-4. Hand-edit any profile. The `## Manual overrides` section survives every refresh and outranks all extracted rules.
+<details>
+<summary><strong>Reference: known limitations</strong></summary>
 
-Sparse corpora are supported. A genre with one or two examples is marked
-`confidence: low | N=k` and review leans on `base.md` accordingly.
-
-## Measured surface metrics
-
-Review Dimensions A–D ask the model to notice things. Dimension E does not.
-
-```bash
-python3 tools/prose_metrics.py <target> --genre <genre> --json
-python3 tools/prose_metrics.py --emit-baseline
-```
-
-The prose sweep is not bad at finding punctuation drift, and it catches things no
-counter reaches, such as voice loss by subtraction or a claim contradicted by a
-table. What it cannot do is be consistent about it, or estimate a rate against a
-corpus by reading. Dimension E is a floor under the sweep, not a replacement.
-
-Reads `.md`, `.mdx`, `.tex` and `.txt` directly, using the same extraction as the
-ingestion protocol, so the counter and the sweep see identical text.
-
-## What the citation tiers mean
-
-**Tier 1 — Existence and accuracy.** Cheap, always run. Searches Crossref, Semantic Scholar, and Google Scholar for the cited work; verifies author, year, title, venue; returns a DOI if found. This tier catches the single most common AI failure mode: hallucinated citations and citations with the wrong year, wrong first author, or wrong venue.
-
-**Tier 2 — Source reputability.** Cheap, default on. Checks whether the venue is peer-reviewed and indexed (Scopus, Web of Science), flags predatory journals against curated heuristics, and flags preprints that appear in the text without a preprint qualifier. Reputability is signal, not verdict — a flag here means the venue warrants scrutiny, not that the cite is wrong.
-
-**Tier 3 — Claim–source match.** Expensive, default on. The sub-agent reads the source's abstract (always available) and, where open-access, key passages of the full text, then compares what the in-text claim asserts against what the source actually argues. Flags overgeneralized claims, directionally-wrong claims, and domain-mismatched applications. Deliberately conservative: it flags suspicious mismatches with quoted source passages so you can decide. False positives are expected and acceptable; silent passes on real mismatches are not.
-
-**Tier 4 — Better-source and recency.** Advisory only. Looks for the original empirical source if the cite is a review or commentary; looks for more recent meta-analyses, replications, or higher-impact alternatives. Output is suggestions, never failures — Tier 4 never blocks a cite, it only proposes you consider stronger ones.
-
-## Apply mode
-
-Reports are never silently applied. `/marginalia apply <report-path>` reads the
-report's JSON sidecar and stages edits as a diff against the source, but writing
-is always behind explicit confirmation.
-
-The split between auto-staging and interactive review is mechanical versus
-intellectual. Mechanical fixes (lexicon swaps, tricolon rewrites, citation year
-and author corrections) auto-stage when confidence is high enough. Intellectual
-changes (removing a hallucinated citation, narrowing an overgeneralised claim,
-fixing argumentative drift) come back to you one at a time to accept, reject or
-edit.
-
-The diff preview is mandatory even for high-confidence changes. No silent writes,
-ever.
-
-## Limitations
-
-Worth knowing before you rely on it.
-
-- **Lexicon-swap suggestions are sometimes context-blind.** "delve into" → "examine into" is ungrammatical. The safety net is the mandatory diff, not the suggestion. Read the diff.
-- **Sparsely-indexed work can be flagged as hallucinated.** A real citation that does not surface in Crossref, Semantic Scholar or Scholar within the sub-agent's tool budget lands in the Tier 1 "no match" bucket. Expect this for older monographs, grey literature and niche venues.
-- **Tier 3 false positives are common by design.** Claim–source match is calibrated to flag and let you decide rather than to minimise flags. Expect to dismiss some.
-- **Predatory-venue detection is heuristic.** A small curated list plus open signals. Beall's list is unmaintained and Cabells is paid.
-- **Non-Markdown input is converted, not natively parsed.** Conversion quality limits review quality. Figures, complex tables and multi-column PDFs are lossy. Scanned PDFs need OCR first.
-- **Measured baselines go stale.** They reflect the corpus as of the last `--emit-baseline`. Add work without regenerating and you are compared against an older version of your voice.
-- **Structural em-dash subtraction cannot be automated.** In dev-doc registers, table rows and definition lists carry em-dashes that are not prose. The tool removes some and is documented as insufficient; the residual has to be read.
-- **A profile is only as good as the corpus.** Feed it AI-assisted drafts and it will faithfully learn the drift as your voice. Use published work.
+- **Suggested word swaps are sometimes ungrammatical in context.** "delve into" becomes "examine into". The safety net is the diff you approve, not the suggestion. Read it.
+- **Real but obscure citations can be flagged as invented.** A reference that does not surface in the major databases within the search budget lands in the "no match" bucket. Expect this for older monographs, grey literature and niche venues.
+- **Tier 3 over-flags by design.** Calibrated to raise a question rather than to minimise questions.
+- **Predatory-venue detection is rough.** A curated list plus open signals.
+- **Converted PDFs and Word files lose things.** Figures, complex tables, multi-column layouts.
+- **Baselines go stale.** They reflect your corpus as of the last rebuild.
+- **A profile is only as good as the corpus.** Feed it AI-assisted drafts and it learns the drift as your voice.
 - **English only.**
 
-## Roadmap
+</details>
 
-- **Now** — Claude Code skills plus a router command.
-- **Later** — an MCP server over the same `content/` layer, so it works from any MCP-capable client.
-- **Later** — a standalone CLI with a model-agnostic backend, so it runs without Claude Code.
+---
 
-## Origin
+## Where this came from
 
-marginalia was built by one academic to solve a specific problem: AI-drift and
-weakly-grounded citations creeping into his own manuscripts and grant proposals.
-It has been in daily use on real papers, grants, presentations and documentation
-since mid-2026. It is shared because other people asked for a copy, not because
-it is a finished product. Expect rough edges, and expect the defaults to reflect
-one person's register until you build your own profile.
+marginalia was built by one academic to solve his own problem: AI-drift and
+weakly-grounded citations creeping into his manuscripts and grant proposals. It
+has been in daily use on real papers, grants, presentations and documentation
+since mid-2026.
 
-Issues and pull requests welcome.
+It is shared because people asked for a copy, not because it is a polished
+product. Expect rough edges. Issues and pull requests are welcome, and so are
+questions from people new to this kind of tool.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. Use it, change it, share it. See `LICENSE`.

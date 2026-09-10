@@ -35,6 +35,30 @@ set, and mixing roots would silently blend two people's voices.
 loaded. A user who thinks they are editing a profile that the run is not reading
 has no way to discover that except by being told.
 
+## The shadowing trap
+
+Order 2 keys on `~/.marginalia/` **existing**, not on it holding anything. So a
+user who creates that directory for any reason silently promotes it above a repo
+that holds their real profiles, and the next run proceeds with no voice profile
+at all. Nothing on the surface says why: the review simply stops making voice
+findings.
+
+**Before reporting `no base style available`, check the lower-priority roots.**
+If a root further down the order holds a `base.md` that the resolved root does
+not, say so explicitly and loudly:
+
+> Using styles from `<resolved>`, which has no `base.md`, while a profile exists
+> at `<shadowed>`. Nothing will be compared against your voice.
+
+Then name the two fixes: move the profile to the resolved root, or set
+`$MARGINALIA_HOME` to the one that has it. Never guess and silently read the
+shadowed profile instead, because a user who deliberately started a fresh profile
+would then get the old one back with no way to see it happening.
+
+`tools/prose_metrics.py` performs this check on every run. It prints the warning
+to stderr and reports `styles_dir` plus `shadowed_profile` in its `--json`
+output, so Dimension E can carry both into the report header.
+
 ## Why this exists
 
 The tool is shared; the profile is not. A style profile contains verbatim
