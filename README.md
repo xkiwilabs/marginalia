@@ -14,6 +14,38 @@ follow, so it can be adapted to OpenAI, Gemini or a local model. See
 
 ---
 
+## Already have Claude Code? Start here
+
+You do not have to follow the setup by hand. Claude Code can install and
+configure marginalia for you, because this repo explains its own structure.
+
+```bash
+git clone https://github.com/xkiwilabs/marginalia.git
+cd marginalia
+claude
+```
+
+Then paste this:
+
+```text
+This repo is marginalia, a writing toolkit that installs as Claude Code skills.
+
+Read README.md and content/paths.md, then set it up for me:
+run ./install.sh, and tell me what to do next to teach it my voice.
+
+I have published papers and grants I can point you at.
+```
+
+Claude reads the repo, installs the skills, and walks you through building your
+voice profile from your own work, including converting your PDFs and Word files.
+Answer its questions as they come.
+
+**That is the whole setup.** Everything below explains what is happening and what
+to do when something goes wrong. Skip to [Using it](#using-it) once the profile
+is built, or read on if you would rather do it yourself.
+
+---
+
 ## The problem it solves
 
 If you use AI to help with writing, your prose drifts. Not dramatically, and not
