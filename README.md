@@ -66,8 +66,10 @@ It needs a Claude account on a paid plan.
 > of its twelve procedure files need no changes at all to run elsewhere. Adapting
 > it to OpenAI, Gemini, another agentic CLI, or a local model is a real option
 > and is documented in [Using a different AI model](#using-a-different-ai-model)
-> and [docs/PORTING.md](docs/PORTING.md). The rest of this guide assumes Claude
-> Code, because that is what works today with no extra effort.
+> and [docs/PORTING.md](docs/PORTING.md) — in most cases you can just clone this
+> repo and ask your own coding agent to adapt it, which takes minutes rather than
+> an afternoon. The rest of this guide assumes Claude Code, because that is what
+> works today with no extra effort.
 
 Install instructions: <https://docs.claude.com/en/docs/claude-code/overview>
 
@@ -478,11 +480,42 @@ Any model capable of following them can do the job.
 Of the twelve procedure files, eleven need no changes at all. One names two
 Claude Code tools, and only for citation checking.
 
-**[docs/PORTING.md](docs/PORTING.md)** covers what a replacement runtime has to
-provide, how much context each operation needs (measured, not guessed), three
-routes to get there, and an honest account of what a local model can and cannot
-do. Short version: reviewing and writing port well; citation checking needs
-internet access, which is a network problem rather than a model one.
+### The quickest way to find out
+
+You do not have to port anything by hand. Clone this repo, open your own coding
+agent in the folder (Codex CLI, Gemini CLI, Cursor, Aider, Cline, whichever you
+use) and paste this:
+
+```text
+This repo is marginalia, a writing-review toolkit. It currently runs as
+Claude Code skills, but its actual logic is plain-Markdown protocols in
+content/ that any model can follow.
+
+Read docs/PORTING.md first, then content/paths.md and
+content/review-protocol.md.
+
+Set it up to run here, in this tool. Start with `review` only: ignore
+citation checking for now. Then run a review on tests/fixtures/ai-drift-sample.md
+and tell me how many of the six planted problems you found.
+```
+
+The agent reads the porting notes, works out what its own harness needs, and
+drives the protocol. **Reviewing usually works within a few minutes**, and the
+fixture gives you a real score rather than a vague impression: six planted
+problems, so six is the target.
+
+Citation checking takes longer, because it needs web search and fetching wired
+up. Budget an afternoon for an adapter covering everything.
+
+Do the fixture check first. If the model finds two of six, no amount of adapter
+work will fix that, and you have found out cheaply.
+
+**[docs/PORTING.md](docs/PORTING.md)** has the full detail: what a replacement
+runtime must provide, how much context each operation needs (measured, not
+guessed), three routes to get there, and an honest account of what a local model
+can and cannot do. Short version: reviewing and writing port well; citation
+checking needs internet access, which is a network problem rather than a model
+one.
 
 ## Where this came from
 

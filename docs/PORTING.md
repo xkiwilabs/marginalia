@@ -71,6 +71,41 @@ large corpus does not need a large context. Reviewing does.
 
 ---
 
+## The fastest way to try it: ask your coding agent
+
+Before reading any further, this is worth five minutes.
+
+marginalia's procedures are written in English and the repo explains its own
+structure, so a competent coding agent can wire up an adapter by reading it.
+Clone the repo, open your agent in the folder, and paste this:
+
+```text
+This repo is marginalia, a writing-review toolkit. It currently runs as
+Claude Code skills, but its actual logic is plain-Markdown protocols in
+content/ that any model can follow.
+
+Read docs/PORTING.md first, then content/paths.md and
+content/review-protocol.md.
+
+Set it up to run here, in this tool. Start with `review` only: ignore
+citation checking for now. Then run a review on tests/fixtures/ai-drift-sample.md
+and tell me how many of the six planted problems you found.
+```
+
+That works in Codex CLI, Gemini CLI, Cursor, Aider, Cline, or anything else that
+can read files and run commands. The agent reads the porting notes, works out
+what its own harness needs, and drives the protocol.
+
+**What you get in five minutes:** working `review`, and a real answer about
+whether the model is up to the job, because the fixture has a known score.
+
+**What takes longer:** `cite`, which needs search and fetch wired up and a
+per-citation loop, and `apply`, which needs a confirmation flow you should not
+rush. Budget an afternoon for a polished adapter covering everything.
+
+Do the fixture check before you invest that afternoon. If the model finds two of
+six, no amount of adapter work will fix it, and you have learned that cheaply.
+
 ## Three ways to do it
 
 ### Route A: another agentic CLI
@@ -223,7 +258,7 @@ A weaker model does not error. It produces a plausible-looking report that
 misses things. Two checks, both already in the repo.
 
 **1. The fixtures.** `tests/fixtures/ai-drift-sample.md` contains six planted
-problems, described in `tests/fixtures/README.md`. Run a review and count how
+problems, enumerated line by line in `tests/fixtures/README.md`. Run a review and count how
 many come back. Fewer than six means the model is not executing the protocol,
 whatever the report looks like. `tests/fixtures/citations-sample.md` has four
 planted citation problems listed in a comment at the top of the file, one of
